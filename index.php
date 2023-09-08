@@ -25,4 +25,20 @@ Flight::route('GET /clientes', function () {
     ]);
 });
 
+Flight::route('GET /clientes/@id', function ($id) {
+    $db = Flight::db();
+    $query = $db->prepare("SELECT * FROM tbl_clientes WHERE cedula_cliente = :id");
+    $query->execute([":id" => $id]);
+    $data = $query->fetch();
+
+    $array[] = [
+        "Cedula" => $data['cedula_cliente'],
+        "Nombre" => $data['nombre_cliente'],
+        "Celular" => $data['celular_cliente'],
+        "Correo" => $data['correo_cliente']
+    ];
+
+    Flight::json($array);
+});
+
 Flight::start();
