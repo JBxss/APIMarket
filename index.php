@@ -69,4 +69,32 @@ Flight::route('POST /clientes/', function () {
     Flight::json($array);
 });
 
+Flight::route('PUT /clientes/', function () {
+    $db = Flight::db();
+    $cedula = Flight::request()->data->cedula_cliente;
+    $nombre = Flight::request()->data->nombre_cliente;
+    $celular = Flight::request()->data->celular_cliente;
+    $correo = Flight::request()->data->correo_cliente;
+    $query = $db->prepare("UPDATE tbl_clientes SET nombre_cliente = :nombre, celular_cliente = :celular, correo_cliente = :correo WHERE cedula_cliente = :cedula");
+
+    $array = [
+        "error" => "Hubo un error al agregar los registros",
+        "status" => "Error"
+    ];
+
+    if ($query->execute([":cedula" => $cedula, ":nombre" => $nombre, ":celular" => $celular, ":correo" => $correo])) {
+        $array = [
+            "data" => [
+                "Cedula" => $cedula,
+                "Nombre" => $nombre,
+                "Celular" => $celular,
+                "Correo" => $correo
+            ],
+            "status" => "success"
+        ];
+    };
+
+    Flight::json($array);
+});
+
 Flight::start();
