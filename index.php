@@ -1,19 +1,15 @@
 <?php
 
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
-
 require 'vendor/autoload.php';
-require 'classes/Users.php';
+require 'classes/Clients.php';
+require 'classes/Products.php';
 
 Flight::register('db', 'PDO', array('mysql:host=localhost;dbname=APIMarket', 'root', ''));
 
-$users = new Users();
+$clients = new Clients();
+$products = new Products();
 
-Flight::route('GET /clientes', [$users, 'selectAll']);
-Flight::route('GET /clientes/@id', [$users, 'selectOne']);
-Flight::route('POST /auth', [$users, 'auth']);
-Flight::route('POST /clientes', [$users, 'update']);
-Flight::route('DELETE /clientes', [$users, 'update']);
+Flight::route('POST /clientes', [$clients, 'resgistrarCliente']);
+Flight::route('POST /productos', [$products, 'crearProducto']);
 
 Flight::start();
