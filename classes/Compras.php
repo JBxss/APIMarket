@@ -40,5 +40,15 @@ class Compras
         $cedula = Flight::request()->data->cedula_cliente;
         $fecha = Flight::request()->data->fecha_compra;
 
+        $query = $db->prepare("SELECT * FROM tbl_clientes WHERE cedula_cliente = :cedula");
+        $query->execute([":cedula" => $cedula]);
+        $data = $query->fetch();
+
+        $array = [
+            "Cedula" => $data['cedula_cliente'],
+            "Nombre" => $data['nombre_cliente'],
+        ];
+
+        Flight::json($array);
     }
 }
