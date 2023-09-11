@@ -39,16 +39,58 @@ class Compras
         $db = Flight::db();
         $cedula = Flight::request()->data->cedula_cliente;
         $fecha = Flight::request()->data->fecha_compra;
+        $descuento = 0;
+        $total = 0;
 
-        $query = $db->prepare("SELECT * FROM tbl_clientes WHERE cedula_cliente = :cedula");
-        $query->execute([":cedula" => $cedula]);
-        $data = $query->fetch();
+        // Convierte la fecha en un objeto de fecha
+        $parseFecha = date_create_from_format('Y-m-d', $fecha);
 
-        $array = [
-            "Cedula" => $data['cedula_cliente'],
-            "Nombre" => $data['nombre_cliente'],
+        // Obtiene el día actual del mes
+        $diaFecha = date_format($parseFecha, 'j');
+
+
+        // Verifica si el día es igual a 15 o 30
+        if ($diaFecha == 15) {
+            $descuento = 0.10;  // 10% de descuento
+        } elseif ($diaFecha == 30) {
+            $descuento = 0.20;  // 20% de descuento
+        }
+
+        $query = $db->prepare("SELECT * FROM tbl_compra WHERE cedula_cliente = :cedula AND fecha_compra = :fecha");
+        $query->execute([":cedula" => $cedula, ":fecha" => $fecha]);
+        $data = $query->fetchAll();
+        $array = [];
+
+        $queryCliente = $db->prepare("SELECT * FROM tbl_clientes WHERE cedula_cliente = :cedula");
+        $queryCliente->execute([":cedula" => $cedula]);
+        $dataCliente = $queryCliente->fetch();
+
+        foreach ($data as $row) {
+
+            $queryProducto = $db->prepare("SELECT * FROM tbl_productos WHERE codigo_producto = :codigo");
+            $queryProducto->execute([":codigo" => $row['codigo_producto']]);
+            $dataProducto = $queryProducto->fetch();
+
+            $array[] = [
+                "Nombre" => $dataCliente['nombre_cliente'],
+                "Cedula" => $row['cedula_cliente'],
+                "Codigo del Producto" => $row['codigo_producto'],
+                "Producto" => $dataProducto['nombre_producto'],
+                "Valor" => $dataProducto['valor_producto'],
+                "Descuento" => ($descuento * 100)."%",
+                "Fecha" => $row['fecha_compra'],
+            ];
+
+            $total += $dataProducto['valor_producto'];
+        }
+
+        $arrayPrecios = [
+            "Total" => $total,
+            "Descuento" => ($descuento * 100)."%",
+            "Total con Descuento" => $total - ($total * $descuento)
         ];
 
         Flight::json($array);
+        Flight::json($arrayPrecios);
     }
 }
