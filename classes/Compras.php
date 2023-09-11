@@ -48,18 +48,15 @@ class Compras
         // Obtiene el día actual del mes
         $diaFecha = date_format($parseFecha, 'j');
 
-
-        // Verifica si el día es igual a 15 o 30
         if ($diaFecha == 15) {
-            $descuento = 0.10;  // 10% de descuento
+            $descuento = 0.10;
         } elseif ($diaFecha == 30) {
-            $descuento = 0.20;  // 20% de descuento
+            $descuento = 0.20;
         }
 
         $query = $db->prepare("SELECT * FROM tbl_compra WHERE cedula_cliente = :cedula AND fecha_compra = :fecha");
         $query->execute([":cedula" => $cedula, ":fecha" => $fecha]);
         $data = $query->fetchAll();
-        $array = [];
 
         $queryCliente = $db->prepare("SELECT * FROM tbl_clientes WHERE cedula_cliente = :cedula");
         $queryCliente->execute([":cedula" => $cedula]);
@@ -71,26 +68,25 @@ class Compras
             $queryProducto->execute([":codigo" => $row['codigo_producto']]);
             $dataProducto = $queryProducto->fetch();
 
-            $array[] = [
-                "Nombre" => $dataCliente['nombre_cliente'],
-                "Cedula" => $row['cedula_cliente'],
-                "Codigo del Producto" => $row['codigo_producto'],
-                "Producto" => $dataProducto['nombre_producto'],
-                "Valor" => $dataProducto['valor_producto'],
-                "Descuento" => ($descuento * 100)."%",
-                "Fecha" => $row['fecha_compra'],
+            $arrayProducto[] = [
+                    "Codigo del Producto" => $row['codigo_producto'],
+                    "Nombre del Producto" => $dataProducto['nombre_producto'],
+                    "Valor" => $dataProducto['valor_producto'],
             ];
 
             $total += $dataProducto['valor_producto'];
         }
 
-        $arrayPrecios = [
+        $array = [
+            "Nombre" => $dataCliente['nombre_cliente'],
+            "Cedula" => $data[0]['cedula_cliente'],
+            "Productos" => $arrayProducto,
+            "Fecha" => $data[0]['fecha_compra'],
             "Total" => $total,
-            "Descuento" => ($descuento * 100)."%",
-            "Total con Descuento" => $total - ($total * $descuento)
+            "Descuento" => ($descuento * 100) . "%",
+            "Valor Final a Pagar" => $total - ($total * $descuento)
         ];
 
         Flight::json($array);
-        Flight::json($arrayPrecios);
     }
 }
