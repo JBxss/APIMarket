@@ -7,6 +7,14 @@ class Compras
 
     function nuevaCompra()
     {
+        if (!validateToken()) {
+            Flight::halt(403, json_encode(
+                [
+                    "error" => "unauthorized",
+                    "status" => "error"
+                ]
+            ));
+        }
 
         $db = Flight::db();
         $codigo = Flight::request()->data->codigo_producto;
@@ -35,6 +43,14 @@ class Compras
 
     function calcularCompra()
     {
+        if (!validateToken()) {
+            Flight::halt(403, json_encode(
+                [
+                    "error" => "unauthorized",
+                    "status" => "error"
+                ]
+            ));
+        }
 
         $db = Flight::db();
         $cedula = Flight::request()->data->cedula_cliente;
@@ -44,7 +60,6 @@ class Compras
 
         // Convierte la fecha en un objeto de fecha
         $parseFecha = date_create_from_format('Y-m-d', $fecha);
-
         // Obtiene el día actual del mes
         $diaFecha = date_format($parseFecha, 'j');
 
@@ -69,9 +84,9 @@ class Compras
             $dataProducto = $queryProducto->fetch();
 
             $arrayProducto[] = [
-                    "Codigo del Producto" => $row['codigo_producto'],
-                    "Nombre del Producto" => $dataProducto['nombre_producto'],
-                    "Valor" => $dataProducto['valor_producto'],
+                "Codigo del Producto" => $row['codigo_producto'],
+                "Nombre del Producto" => $dataProducto['nombre_producto'],
+                "Valor" => $dataProducto['valor_producto'],
             ];
 
             $total += $dataProducto['valor_producto'];

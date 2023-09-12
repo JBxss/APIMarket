@@ -8,6 +8,15 @@ class Products
     function crearProducto()
     {
 
+        if (!validateToken()) {
+            Flight::halt(403, json_encode(
+                [
+                    "error" => "unauthorized",
+                    "status" => "error"
+                ]
+            ));
+        }
+        
         $db = Flight::db();
         $codigo = Flight::request()->data->codigo_producto;
         $nombre = Flight::request()->data->nombre_producto;
