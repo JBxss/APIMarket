@@ -22,16 +22,29 @@ class Products
         $nombre = Flight::request()->data->nombre_producto;
         $valor = Flight::request()->data->valor_producto;
 
-        if (empty($codigo) || empty($nombre) || empty($valor)) {
+        // Realiza validaciones
+        $errores = [];
 
+        if (empty($codigo) || !is_numeric($codigo)) {
+            $errores[] = "El codigo es invalido";
+        }
+
+        if (empty($nombre)) {
+            $errores[] = "El nombre es obligatorio";
+        }
+
+        if (empty($valor) || !is_numeric($valor)) {
+            $errores[] = "El valor es invalido";
+        }
+
+        if (!empty($errores)) {
             Flight::halt(400, json_encode(
                 [
-                    "error" => "Todos los campos son obligatorios",
+                    "error" => $errores,
                     "status" => "Error",
                     "code" => "400"
                 ]
             ));
-
         } else {
 
             $query = $db->prepare("INSERT INTO tbl_productos (codigo_producto, nombre_producto, valor_producto) VALUES (:codigo, :nombre, :valor)");
